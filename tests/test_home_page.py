@@ -18,15 +18,29 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 
 @pytest.fixture(scope="module")
 def setup():
-    geckodriver_path = r"C:\Users\Alpha1\Downloads\geckodriver.exe"
+    geckodriver_path = "/usr/local/bin/geckodriver"
+    
+    # Check if the geckodriver exists at the specified path
+    if not os.path.isfile(geckodriver_path):
+        raise ValueError(f"Geckodriver not found at path: {geckodriver_path}")
+    
+    # Configure Firefox options
     options = Options()
     options.add_argument('--enable-logging')
-    options.headless = False
+    options.headless = False  # Set to True if you want headless mode
     options.set_preference("devtools.console.stdout.content", True)
+    
+    # Set up the geckodriver service
     service = Service(geckodriver_path)
+    
+    # Create the WebDriver instance
     driver = webdriver.Firefox(service=service, options=options)
     driver.maximize_window()
+    
+    # Yield the driver instance to be used in the tests
     yield driver
+    
+    # Cleanup after tests
     driver.quit()
 
 def test_home_page_loads_correctly(setup):
