@@ -1,21 +1,39 @@
 version: 1
+reporting: checks-v1
+policy:
+  pullRequests: collaborators
+autoCancelPreviousChecks: true
 tasks:
-  - workerType: docker-worker
-    provisionerId: "aws-provisioner-v1"
-    payload:
-      image: "mozillasecurity/ci-test:latest"
-      command:
-        - pytest
-        - tests/test_home_page.py
-      maxRunTime: 1800
-    metadata:
-      name: "Run tests on Firefox"
-      description: "Run Selenium tests using Firefox"
-      owner: "mobm93@hotmail.com"
-      source: https://github.com/mobm93/mobm93.github.io
-    scopes:
-      - "queue:run-task"
-    routes:
-      - "github.push"
-    retries: 3
-    deadline: "2024-12-04T00:00:00Z"
+  $let:
+    head_rev:
+      $if: tasks_for == "github-pull-request"
+      then: ${event.pull_request.head.sha}
+      else: ${event.after}
+    repository:
+      $if: tasks_for == "github-pull-request"
+      then: ${event.pull_request.head.repo.html_url}
+      else: ${event.repository.html_url}
+  in:
+    $match:
+      (tasks_for == "github-push") || (tasks_for == "github-pull-request" && event["action"] in ["opened","reopened","synchronize"]):
+        taskId:
+          $eval: as_slugid("test")
+        deadline:
+          $fromNow: 1 day
+        taskQueueId: proj-misc/tutorial
+        metadata:
+          name: 'Render Test. '
+          description: Basic sanity test to check 3js rendering on Firefox
+          owner: ${event.sender.login}@users.noreply.github.com
+          source: ${event.repository.url}
+        payload:
+          maxRunTime: 3600
+          image: python:latest
+          command:
+            - /bin/bash
+            - '--login'
+            - '-c'
+            - >-
+              git clone ${repository} repo && cd repo && git config
+              advice.detachedHead false && git checkout ${head_rev} && pip
+              install tox && tox
