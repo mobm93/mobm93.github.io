@@ -1,0 +1,27 @@
+version: 1
+tasks:
+  test-firefox:
+    scheduler: "taskcluster/scheduler/v1"
+    workerType: "docker-worker"
+    worker:
+      task:
+        image:
+          type: "docker"
+          name: "mozillasecurity/ci-test:latest"  # Firefox test image
+          user: root
+        docker:
+          image: "mozillasecurity/ci-test:latest"
+          command: ["pytest", "tests/test_home_page.py"]
+          artifacts:
+            - type: file
+              name: "test_results/"
+              path: "/home/worker/test_results"
+        environment:
+          GECKODRIVER_PATH: "/usr/local/bin/geckodriver"
+    metadata:
+      name: "Run tests on Firefox"
+      description: "Run selenium tests using Firefox"
+      owner: "mobm93@hotmail.com"
+    scopes:
+      - "queue:run-task"
+    retries: 3
