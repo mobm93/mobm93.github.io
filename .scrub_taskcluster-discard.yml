@@ -22,7 +22,7 @@ tasks:
           $fromNow: 1 day
         taskQueueId: proj-misc/tutorial
         metadata:
-          name: 'Render Test. '
+          name: "Render Test. "
           description: Basic sanity test to check 3js rendering on Firefox
           owner: ${event.sender.login}@users.noreply.github.com
           source: ${event.repository.url}
@@ -31,8 +31,8 @@ tasks:
           image: python:latest
           command:
             - /bin/bash
-            - '--login'
-            - '-c'
+            - "--login"
+            - "-c"
             - >-
               git clone ${repository} repo && cd repo && git config
               advice.detachedHead false && git checkout ${head_rev} && pip
