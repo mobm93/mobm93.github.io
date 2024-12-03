@@ -1,0 +1,24 @@
+name: Taskcluster CI
+
+on:
+  push:
+    branches:
+      - master  # Trigger this workflow when changes are pushed to master
+
+jobs:
+  taskcluster:
+    runs-on: ubuntu-latest  # Use Ubuntu for the CI environment
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Taskcluster
+        uses: taskcluster/taskcluster-github-action@v1
+        with:
+          taskcluster-client-id: ${{ secrets.TASKCLUSTER_CLIENT_ID }}
+          taskcluster-client-secret: ${{ secrets.TASKCLUSTER_CLIENT_SECRET }}
+
+      - name: Trigger Taskcluster job
+        run: |
+          taskcluster trigger create taskcluster.yml
